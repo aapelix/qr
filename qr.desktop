@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=qr
+Exec=qr
+Icon=/usr/share/pixmaps/aapelix-qr-logo.png
+Terminal=false
+Type=Application

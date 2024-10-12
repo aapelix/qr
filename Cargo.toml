@@ -1,0 +1,19 @@
+[package]
+name = "qr"
+version = "0.1.0"
+edition = "2021"
+description = "A QR code generator app with customisibles shapes and more. Made with GTK4 by aapelix"
+license = "MIT"
+authors = ["aapelix <hello@aapelix.dev>"]
+
+[package.metadata.generate-rpm]
+assets = [
+    { source = "target/release/qr", dest = "/usr/bin/qr", mode = "755" },
+    { source = "qr.desktop", dest = "/usr/share/applications/qr.desktop", mode = "644" },
+    { source = "qr_code.png", dest = "/usr/share/pixmaps/aapelix-qr-logo.png", mode = "644" },
+]
+
+[dependencies]
+fast_qr = { version = "0.12.6", features = ["svg", "image"] }
+gtk4 = "0.9.2"
+image = "0.23.0"
