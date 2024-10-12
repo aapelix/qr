@@ -52,7 +52,7 @@ fn main() {
 
         let shape_selector = ComboBoxText::new();
         shape_selector.append_text("Square");
-        shape_selector.append_text("RoundedSquare");
+        shape_selector.append_text("Rounded Square");
         shape_selector.append_text("Circle");
         shape_selector.append_text("Diamond");
         shape_selector.append_text("Horizontal");
@@ -118,8 +118,8 @@ fn main() {
 
             let selected_shape = match shape_selector.active_text().as_deref() {
                 Some("Square") => Shape::Square,
-                Some("RoundedSquare") => Shape::Circle,
-                Some("Circle") => Shape::RoundedSquare,
+                Some("Rounded Square") => Shape::RoundedSquare,
+                Some("Circle") => Shape::Circle,
                 Some("Diamond") => Shape::Diamond,
                 Some("Horizontal") => Shape::Horizontal,
                 Some("Vertical") => Shape::Vertical,
