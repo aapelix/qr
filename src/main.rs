@@ -6,17 +6,9 @@ use gtk4::{
 use fast_qr::convert::{image::ImageBuilder, Builder, Shape};
 use fast_qr::qr::QRBuilder;
 use std::path::Path;
-
-/*
-
-TODO:
-
-- add support for saving in svg
-- make qr code colors customizable
-- get the app theme from system theme
-- optimize
-
-*/
+use image::DynamicImage;
+use rqrr;
+use rqrr::PreparedImage;
 
 fn main() {
     let app = Application::builder()
@@ -63,14 +55,24 @@ fn main() {
         theme_selector.append_text("System Default");
         theme_selector.append_text("Light");
         theme_selector.append_text("Dark");
-
         theme_selector.set_active(Some(0));
+
+        let select_image_btn = Button::with_label("Read QR Code");
+        let image_path = std::cell::RefCell::new(String::new());
+
+        // TextView for displaying QR code content
+        let qr_content_display = TextView::new();
+        qr_content_display.set_editable(false);
+        qr_content_display.set_hexpand(true);
+        qr_content_display.set_vexpand(false);
 
         vbox.append(&qr_entry);
         vbox.append(&shape_selector);
         vbox.append(&theme_selector);
         vbox.append(&qr_gen_btn);
+        vbox.append(&select_image_btn);
         vbox.append(&save_to_file_btn);
+        vbox.append(&qr_content_display);
 
         let qr_frame = Frame::new(Some("QR Code Display"));
         qr_frame.set_hexpand(true);
@@ -115,6 +117,8 @@ fn main() {
             if text.is_empty() {
                 return;
             }
+
+            qr_content_display.buffer().set_text(&text); // Display QR code content
 
             let selected_shape = match shape_selector.active_text().as_deref() {
                 Some("Square") => Shape::Square,
@@ -180,6 +184,49 @@ fn main() {
                         } else {
                             let _ = std::fs::remove_file("out.png");
                         }
+                    }
+                }
+                dialog.close();
+            });
+            file_chooser.show();
+        });
+
+        let window_clone = window.clone();
+
+        // Handle image file selection
+        select_image_btn.connect_clicked(move |_| {
+            let file_chooser = FileChooserDialog::new(
+                Some("Select Image File"),
+                Some(&window_clone),
+                FileChooserAction::Open,
+                &[("_Cancel", ResponseType::Cancel), ("_Open", ResponseType::Accept)]
+            );
+
+            let image_path = image_path.clone();
+
+            file_chooser.connect_response(move |dialog, response| {
+                if response == ResponseType::Accept {
+                    if let Some(filename) = dialog.file() {
+                        let path = filename.path().unwrap();
+                        *image_path.borrow_mut() = path.to_string_lossy().into_owned();
+                        eprintln!("Selected image file: {}", path.display());
+
+                        let img = image::open(path).unwrap().to_luma8();
+                        let mut img = rqrr::PreparedImage::prepare(img);
+
+                        let grids = img.detect_grids();
+                        println!("Detected grids: {}", grids.len());
+
+                        if grids.is_empty() {
+                            eprintln!("No grids found in the image.");
+                            return;
+                        }
+
+                        assert_eq!(grids.len(), 1);
+
+                        let (meta, content) = grids[0].decode().unwrap();
+                        assert_eq!(meta.ecc_level, 0);
+                        assert_eq!(content, "https://github.com/WanzenBug/rqrr");
                     }
                 }
                 dialog.close();
