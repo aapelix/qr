@@ -6,9 +6,7 @@ use gtk4::{
 use fast_qr::convert::{image::ImageBuilder, Builder, Shape};
 use fast_qr::qr::QRBuilder;
 use std::path::Path;
-use image::DynamicImage;
 use rqrr;
-use rqrr::PreparedImage;
 
 fn main() {
     let app = Application::builder()
